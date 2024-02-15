@@ -25,19 +25,25 @@
 
 const {program} = require('commander');
 const version = require('./version');
+const http = require('http');
+const url = require('url');
 
 program
   .name('apex2www')
   .usage('[options]')
   .summary('Apex/root redirector to www')
-  .description('HTTP server that redirects all requests to www. (' + version.what + ' built on ' + version.when + ')')
+  .description('HTTP server that redirects all requests to www. (' +
+    version.what + ' built on ' + version.when + ')')
   .version(version.what, '-v, --version', 'Output the version number')
   .helpOption('-?, --help', 'Print this help information')
   .configureHelp({sortOptions: true, sortSubcommands: true});
 
 program
-  .option('--port', 'TCP port to bind to', 80)
-  .option('--verbose', 'Print every HTTP request to console')
+  .option('--port <integer>', 'TCP port to bind to', 80)
+  .option('--halt <string>',
+    'If this value is provided in the X-Apex2www-Halt header, the app stops')
+  .option('--https', 'Listen to secure requests, instead of plain HTTP')
+  .option('--verbose', 'Print every HTTP request to console');
 
 try {
   program.parse(process.argv);
@@ -47,6 +53,84 @@ try {
   process.exit(1);
 }
 
-console.info('starting...');
+const opts = program.opts();
+const port = opts.port;
+http.createServer(
+  function(request, response) {
+    const u = url.parse(request.url);
+    u.hostname = request.headers['host'].replace(/:[0-9]+$/, '');
+    u.protocol = opts.https ? 'https' : 'http';
+    u.port = opts.https ? '443' : '80';
+    const from = url.format(u);
+    const halt = request.headers['x-apex2www-halt'];
+    if (halt != undefined) {
+      if (halt == opts.halt) {
+        console.info('Halt header received with the right key, will shutdown in a second...');
+        setTimeout(
+          function() {
+            console.info('End of session');
+            process.exit(0);
+          },
+          100
+        );
+        ok(response, 'Will shutdown in a second...');
+      } else {
+        oops(response, 'Wrong halting key');
+      }
+    } else if (request.method != 'GET') {
+      oops(response, 'Only GET method is supported');
+    } else {
+      if (!u.hostname.startsWith('www.')) {
+        u.hostname = 'www.' + u.hostname;
+      }
+      const redir = url.format(u);
+      response.writeHead(
+        303,
+        'Redirect',
+        {
+          'Content-Length': 0,
+          'Content-Type': 'text/plain',
+          'Location': redir
+        }
+      ).end('');
+      if (opts.verbose) {
+        console.info('%s -> %s', from, redir);
+      }
+    }
+  }
+).listen(port);
+console.info('HTTP server started at port %d, hit Ctrl-C to stop it', port);
 
-console.info('started!');
+/**
+ * Return an error.
+ *
+ * @param {Response} response - The response
+ * @param {String} body - The message
+ */
+function oops(response, body) {
+  response.writeHead(
+    400,
+    'Error',
+    {
+      'Content-Length': body.length,
+      'Content-Type': 'text/plain'
+    }
+  ).end(body);
+}
+
+/**
+ * Return a success.
+ *
+ * @param {Response} response - The response
+ * @param {String} body - The message
+ */
+function ok(response, body) {
+  response.writeHead(
+    200,
+    'OK',
+    {
+      'Content-Length': body.length,
+      'Content-Type': 'text/plain'
+    }
+  ).end(body);
+}
