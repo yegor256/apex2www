@@ -27,12 +27,18 @@ LABEL Description="Apex/root DNS redirector" Vendor="Yegor Bugayenko" Version="0
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -y
-RUN apt-get install -y npm
-RUN apt-get clean
+RUN apt-get install -y curl
+RUN rm -rf /usr/lib/node_modules \
+  && curl -sL https://deb.nodesource.com/setup_18.x -o /tmp/nodesource_setup.sh \
+  && bash /tmp/nodesource_setup.sh \
+  && apt-get -y install nodejs \
+  && bash -c 'node --version' \
+  && bash -c 'npm --version'
 
-COPY entry.sh /
-RUN chmod a+x /entry.sh
+COPY . /apex2www
+RUN cd /apex2www && npm install
+# RUN cd /apex2www && npm test
 
 EXPOSE 80/tcp
 
-ENTRYPOINT ["/entry.sh"]
+ENTRYPOINT ["/apex2www/src/apex2www.js", "--port", "80"]
