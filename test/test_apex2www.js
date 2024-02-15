@@ -29,6 +29,7 @@ const runSync = require('./helpers').runSync;
 const exec = require('child_process').exec;
 const version = require('../src/version');
 const util = require('node:util');
+const portfinder = require('portfinder');
 
 describe('apex2www', function() {
   it('prints its own version', function(done) {
@@ -47,19 +48,20 @@ describe('apex2www', function() {
 
   it('runs web server and responds to HTTP requests', function(done) {
     const execPromise = util.promisify(exec);
-    const port = 8888;
-    const p = execPromise(`node ${path.resolve('./src/apex2www.js')} --port=${port} --halt=foo`);
-    setTimeout(function() {
-      const url = 'http://localhost:' + port + '/';
-      http.get(url, function(response) {
-        assert(response.headers['location'] == 'http://www.localhost:80/');
-        http.get(url, {headers: {'X-Apex2www-Halt': 'foo'}}, async function(response) {
-          const {stdout, stderr} = await p;
-          assert(stdout.includes('End of session'));
-          assert(stderr == '');
-          done();
+    portfinder.getPort(function(err, port) {
+      const p = execPromise(`node ${path.resolve('./src/apex2www.js')} --port=${port} --halt=foo`);
+      setTimeout(function() {
+        const url = 'http://localhost:' + port + '/';
+        http.get(url, function(response) {
+          assert(response.headers['location'] == 'http://www.localhost:80/');
+          http.get(url, {headers: {'X-Apex2www-Halt': 'foo'}}, async function(response) {
+            const {stdout, stderr} = await p;
+            assert(stdout.includes('End of session'));
+            assert(stderr == '');
+            done();
+          });
         });
-      });
-    }, 100);
+      }, 100);
+    });
   });
 });

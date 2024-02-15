@@ -32,7 +32,8 @@
   "devDependencies": {
     "eslint": "8.56.0",
     "eslint-config-google": "0.14.0",
-    "mocha": "10.3.0"
+    "mocha": "10.3.0",
+    "portfinder": "1.0.32"
   },
   "scripts": {
     "test": "mocha --timeout 1200000",
