@@ -1,0 +1,11 @@
+node_modules/
+.nyc_output
+coverage/
+.idea
+.eoc/
+mochawesome-report/
+coverage.html
+target/
+.mvn/
+temp/
+*.tgz
