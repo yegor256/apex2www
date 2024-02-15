@@ -64,7 +64,7 @@ http.createServer(
     const from = url.format(u);
     const halt = request.headers['x-apex2www-halt'];
     if (halt != undefined) {
-      if (halt == opts.halt) {
+      if (halt == opts.halt && opts.halt != undefined) {
         console.info('Halt header received with the right key, will shutdown in a second...');
         setTimeout(
           function() {

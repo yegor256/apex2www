@@ -8,7 +8,9 @@ image helps you start your own apex/root to www redirecting HTTP server.
 When Docker is [installed](https://docs.docker.com/install/), run this:
 
 ```bash
-$ docker run --name apex2www --detach --restart=always --publish 80:80 yegor256/apex2www
+$ docker run --name apex2www --detach \
+  --restart=always --publish 80:80 \
+  yegor256/apex2www
 ```
 
 Now you can point `A` DNS record of your domain to the IP address of the

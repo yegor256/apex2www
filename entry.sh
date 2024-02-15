@@ -24,4 +24,5 @@
 set -x
 set -e
 
-# ...
+npm install
+apex2www --port 80
