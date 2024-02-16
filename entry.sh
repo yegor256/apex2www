@@ -30,6 +30,4 @@ src/apex2www.js --port 80 &
 
 src/apex2www.js --https --port 443 &
 
-echo 'Started...'
-
 tail -f /dev/null
