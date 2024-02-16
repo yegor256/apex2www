@@ -37,8 +37,11 @@ RUN rm -rf /usr/lib/node_modules \
 
 COPY . /apex2www
 RUN cd /apex2www && npm install
-# RUN cd /apex2www && npm test
+RUN cd /apex2www && src/apex2www.js --port 80 &
+RUN cd /apex2www && src/apex2www.js --https --port 443 &
 
 EXPOSE 80/tcp
+EXPOSE 443/tcp
 
-ENTRYPOINT ["/apex2www/src/apex2www.js", "--port", "80"]
+# This means, sleep forever:
+ENTRYPOINT ["sh", "-c", "tail -f /dev/null"]

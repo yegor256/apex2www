@@ -46,10 +46,12 @@ describe('apex2www', function() {
     done();
   });
 
+  const js = path.resolve('./src/apex2www.js');
+
   it('runs web server and responds to HTTP requests', function(done) {
     const execPromise = util.promisify(exec);
     portfinder.getPort(function(err, port) {
-      const p = execPromise(`node ${path.resolve('./src/apex2www.js')} --port=${port} --halt=foo`);
+      const p = execPromise(`node ${js} --port=${port} --halt=foo`);
       setTimeout(function() {
         const url = 'http://localhost:' + port + '/';
         http.get(url, function(response) {
@@ -64,4 +66,23 @@ describe('apex2www', function() {
       }, 100);
     });
   });
+
+  // it('runs web server and responds to HTTPS requests', function(done) {
+  //   const execPromise = util.promisify(exec);
+  //   portfinder.getPort(function(err, port) {
+  //     const p = execPromise(`node ${js} --https --port=${port} --halt=foo`);
+  //     setTimeout(function() {
+  //       const url = 'http://localhost:' + port + '/';
+  //       http.get(url, function(response) {
+  //         assert(response.headers['location'] == 'http://www.localhost:443/');
+  //         http.get(url, {headers: {'X-Apex2www-Halt': 'foo'}}, async function(response) {
+  //           const {stdout, stderr} = await p;
+  //           assert(stdout.includes('End of session'));
+  //           assert(stderr == '');
+  //           done();
+  //         });
+  //       });
+  //     }, 100);
+  //   });
+  // });
 });

@@ -28,6 +28,7 @@ const version = require('./version');
 const http = require('http');
 const https = require('https');
 const url = require('url');
+const fs = require('fs');
 
 program
   .name('apex2www')
@@ -44,7 +45,8 @@ program
   .option('--halt <string>',
     'If this value is provided in the X-Apex2www-Halt header, the app stops')
   .option('--https', 'Listen to secure requests, instead of plain HTTP')
-  .option('--verbose', 'Print every HTTP request to console');
+  .option('--debug', 'Print as much as possible to the console')
+  .option('--verbose', 'Print every HTTP request to the console');
 
 try {
   program.parse(process.argv);
@@ -61,6 +63,9 @@ servlet = function(request, response) {
   u.hostname = request.headers['host'].replace(/:[0-9]+$/, '');
   u.protocol = opts.https ? 'https' : 'http';
   u.port = opts.https ? '443' : '80';
+  if (opts.debug) {
+    console.debug('%s %s', request.method, url.format(u));
+  }
   const from = url.format(u);
   const halt = request.headers['x-apex2www-halt'];
   if (halt != undefined) {
@@ -94,15 +99,23 @@ servlet = function(request, response) {
         'X-Apex2www-Version': version.what
       }
     ).end('');
-    if (opts.verbose) {
+    if (opts.verbose || opts.debug) {
       console.info('%s -> %s', from, redir);
     }
   }
 };
 
 if (opts.https) {
-  https.createServer(servlet).listen(port);
-  console.info('HTTPS server started at port %d, hit Ctrl-C to stop it', port);
+  const key = fs.readFileSync('ssl/key.pem');
+  const cert = fs.readFileSync('ssl/cert.pem');
+  https.createServer(
+    {key: key, cert: cert},
+    servlet
+  ).listen(port);
+  console.info(
+    'HTTPS server started at port %d (key.length=%d, cert.length=%d), hit Ctrl-C to stop it',
+    port, key.length, cert.length
+  );
 } else {
   http.createServer(servlet).listen(port);
   console.info('HTTP server started at port %d, hit Ctrl-C to stop it', port);

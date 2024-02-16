@@ -9,7 +9,7 @@ When Docker is [installed](https://docs.docker.com/install/), run this:
 
 ```bash
 $ docker run --name apex2www --detach \
-  --restart=always --publish 80:80 \
+  --restart=always --publish 80:80 --publish 443:443 \
   yegor256/apex2www
 ```
 
