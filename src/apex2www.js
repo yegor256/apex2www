@@ -26,6 +26,7 @@
 const {program} = require('commander');
 const version = require('./version');
 const http = require('http');
+const https = require('https');
 const url = require('url');
 
 program
@@ -55,52 +56,57 @@ try {
 
 const opts = program.opts();
 const port = opts.port;
-http.createServer(
-  function(request, response) {
-    const u = url.parse(request.url);
-    u.hostname = request.headers['host'].replace(/:[0-9]+$/, '');
-    u.protocol = opts.https ? 'https' : 'http';
-    u.port = opts.https ? '443' : '80';
-    const from = url.format(u);
-    const halt = request.headers['x-apex2www-halt'];
-    if (halt != undefined) {
-      if (halt == opts.halt && opts.halt != undefined) {
-        console.info('Halt header received with the right key, will shutdown in a second...');
-        setTimeout(
-          function() {
-            console.info('End of session');
-            process.exit(0);
-          },
-          100
-        );
-        ok(response, 'Will shutdown in a second...');
-      } else {
-        oops(response, 'Wrong halting key');
-      }
-    } else if (request.method != 'GET') {
-      oops(response, 'Only GET method is supported');
+servlet = function(request, response) {
+  const u = url.parse(request.url);
+  u.hostname = request.headers['host'].replace(/:[0-9]+$/, '');
+  u.protocol = opts.https ? 'https' : 'http';
+  u.port = opts.https ? '443' : '80';
+  const from = url.format(u);
+  const halt = request.headers['x-apex2www-halt'];
+  if (halt != undefined) {
+    if (halt == opts.halt && opts.halt != undefined) {
+      console.info('Halt header received with the right key, will shutdown in a second...');
+      setTimeout(
+        function() {
+          console.info('End of session');
+          process.exit(0);
+        },
+        100
+      );
+      ok(response, 'Will shutdown in a second...');
     } else {
-      if (!u.hostname.startsWith('www.')) {
-        u.hostname = 'www.' + u.hostname;
+      oops(response, 'Wrong halting key');
+    }
+  } else if (request.method != 'GET') {
+    oops(response, 'Only GET method is supported');
+  } else {
+    if (!u.hostname.startsWith('www.')) {
+      u.hostname = 'www.' + u.hostname;
+    }
+    const redir = url.format(u);
+    response.writeHead(
+      303,
+      'Redirect',
+      {
+        'Content-Length': 0,
+        'Content-Type': 'text/plain',
+        'Location': redir,
+        'X-Apex2www-Version': version.what
       }
-      const redir = url.format(u);
-      response.writeHead(
-        303,
-        'Redirect',
-        {
-          'Content-Length': 0,
-          'Content-Type': 'text/plain',
-          'Location': redir,
-          'X-Apex2www-Version': version.what
-        }
-      ).end('');
-      if (opts.verbose) {
-        console.info('%s -> %s', from, redir);
-      }
+    ).end('');
+    if (opts.verbose) {
+      console.info('%s -> %s', from, redir);
     }
   }
-).listen(port);
-console.info('HTTP server started at port %d, hit Ctrl-C to stop it', port);
+};
+
+if (opts.https) {
+  https.createServer(servlet).listen(port);
+  console.info('HTTPS server started at port %d, hit Ctrl-C to stop it', port);
+} else {
+  http.createServer(servlet).listen(port);
+  console.info('HTTP server started at port %d, hit Ctrl-C to stop it', port);
+}
 
 /**
  * Return an error.
