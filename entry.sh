@@ -1,3 +1,4 @@
+#!/bin/bash
 # The MIT License (MIT)
 #
 # Copyright (c) 2024 Yegor Bugayenko
@@ -20,24 +21,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-FROM ubuntu:22.04
-MAINTAINER Yegor Bugayenko <yegor256@gmail.com>
-LABEL Description="Apex/root DNS redirector" Vendor="Yegor Bugayenko" Version="0.1"
+set -x
+set -e
 
-ENV DEBIAN_FRONTEND=noninteractive
+cd "$(dirname "$0")"
 
-RUN apt-get update -y
-RUN apt-get install -y curl
-RUN rm -rf /usr/lib/node_modules \
-  && curl -sL https://deb.nodesource.com/setup_18.x -o /tmp/nodesource_setup.sh \
-  && bash /tmp/nodesource_setup.sh \
-  && apt-get -y install nodejs
+src/apex2www.js --port 80 &
 
-COPY . /apex2www
-RUN cd /apex2www && npm install
+src/apex2www.js --https --port 443 &
 
-EXPOSE 80/tcp
-EXPOSE 443/tcp
+echo 'Started...'
 
-# This means, sleep forever:
-ENTRYPOINT ["/apex2www/entry.sh"]
+tail -f /dev/null
