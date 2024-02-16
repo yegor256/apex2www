@@ -90,7 +90,8 @@ http.createServer(
         {
           'Content-Length': 0,
           'Content-Type': 'text/plain',
-          'Location': redir
+          'Location': redir,
+          'X-Apex2www-Version': version.what
         }
       ).end('');
       if (opts.verbose) {
@@ -113,7 +114,8 @@ function oops(response, body) {
     'Error',
     {
       'Content-Length': body.length,
-      'Content-Type': 'text/plain'
+      'Content-Type': 'text/plain',
+      'X-Apex2www-Version': version.what
     }
   ).end(body);
 }
@@ -130,7 +132,8 @@ function ok(response, body) {
     'OK',
     {
       'Content-Length': body.length,
-      'Content-Type': 'text/plain'
+      'Content-Type': 'text/plain',
+      'X-Apex2www-Version': version.what
     }
   ).end(body);
 }
