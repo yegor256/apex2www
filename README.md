@@ -7,7 +7,7 @@
 [This](https://hub.docker.com/r/yegor256/apex2www)
 [Docker](https://www.docker.com/)
 image helps you start your own apex/root to www redirecting HTTP/S server.
-Basically, this your own self-hosted alternative to the
+Basically, this is your own self-hosted alternative to the
 [redirect.pizza](https://redirect.pizza/use-cases/apex-to-www) web service.
 
 When Docker is [installed](https://docs.docker.com/install/), run this:
