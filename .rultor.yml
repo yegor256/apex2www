@@ -49,5 +49,6 @@ release:
     npm publish --no-color --userconfig=../npmrc
 merge:
   script: |-
+    npm install
     npm test
     npm run eslint
