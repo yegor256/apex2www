@@ -29,6 +29,7 @@ const http = require('http');
 const https = require('https');
 const url = require('url');
 const fs = require('fs');
+const tls = require('tls');
 
 program
   .name('apex2www')
@@ -106,15 +107,39 @@ servlet = function(request, response) {
 };
 
 if (opts.https) {
-  const key = fs.readFileSync('ssl/key.pem');
-  const cert = fs.readFileSync('ssl/cert.pem');
+  process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
+  const sniDefaultKey = fs.readFileSync('ssl/key.pem');
+  const sniDefaultCert = fs.readFileSync('ssl/cert.pem');
+  const sniCallback = (serverName, callback) => {
+    let cert = null;
+    let key = null;
+
+    if (serverName !== 'localhost') {
+      cert = fs.readFileSync(path.join('ssl/cert.pem'));
+      key = fs.readFileSync(path.join('ssl/key.pem'));
+    } else {
+      cert = sniDefaultCert;
+      key = sniDefaultKey;
+    }
+
+    callback(null, new tls.createSecureContext({
+      cert,
+      key,
+    }));
+  };
+
+  const serverOptions = {
+    SNICallback: sniCallback,
+    maxVersion: 'TLSv1.3',
+    minVersion: 'TLSv1.2'
+  };
   https.createServer(
-    {key: key, cert: cert},
+    serverOptions,
     servlet
   ).listen(port);
   console.info(
     'HTTPS server started at port %d (key.length=%d, cert.length=%d), hit Ctrl-C to stop it',
-    port, key.length, cert.length
+    port, sniDefaultKey.length, sniDefaultCert.length
   );
 } else {
   http.createServer(servlet).listen(port);
