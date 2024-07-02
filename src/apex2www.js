@@ -122,6 +122,7 @@ if (opts.https) {
       key = sniDefaultKey;
     }
 
+    // eslint-disable-next-line new-cap
     callback(null, new tls.createSecureContext({
       cert,
       key,
