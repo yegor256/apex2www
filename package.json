@@ -32,7 +32,7 @@
   "devDependencies": {
     "eslint": "8.57.0",
     "eslint-config-google": "0.14.0",
-    "mocha": "10.7.0",
+    "mocha": "10.7.3",
     "portfinder": "1.0.32"
   },
   "scripts": {
