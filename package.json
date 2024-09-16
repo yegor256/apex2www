@@ -30,7 +30,7 @@
     "node": "21.7.3"
   },
   "devDependencies": {
-    "eslint": "8.57.0",
+    "eslint": "8.57.1",
     "eslint-config-google": "0.14.0",
     "mocha": "10.7.3",
     "portfinder": "1.0.32"
