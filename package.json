@@ -27,7 +27,7 @@
   "dependencies": {
     "colors": "1.4.0",
     "commander": "12.1.0",
-    "node": "21.7.3"
+    "node": "23.1.0"
   },
   "devDependencies": {
     "eslint": "8.57.1",
