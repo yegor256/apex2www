@@ -5,7 +5,10 @@ const url = require('url');
 const { setHeader } = require('./utils/header');
 const { oops, ok } = require('./utils/response');
 const version = require('./version');
+<<<<<<< HEAD
 const tls = require('tls');
+=======
+>>>>>>> fb9b5cc (Implement sync middleware)
 const { syncMiddleware } = require('./utils/middleware');
 
 const methodCheck = (context, next) => {
@@ -74,6 +77,7 @@ const createServerHTTP = (opts) => {
 };
 
 const createServerHTTPS = (opts) => {
+<<<<<<< HEAD
   process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
   const port = opts.port;
   const key = fs.readFileSync(path.join('ssl/key.pem'));
@@ -101,3 +105,22 @@ const createServerHTTPS = (opts) => {
 };
 
 module.exports = { createServerHTTPS, createServerHTTP };
+=======
+  const port = opts.port;
+  const key = fs.readFileSync('ssl/key.pem');
+  const cert = fs.readFileSync('ssl/cert.pem');
+  https
+    .createServer({ key: key, cert: cert }, (req, res) =>
+      server(req, res, opts)
+    )
+    .listen(port);
+  console.info(
+    'HTTPS server started at port %d (key.length=%d, cert.length=%d), hit Ctrl-C to stop it',
+    port,
+    key.length,
+    cert.length
+  );
+};
+
+module.exports = { createServerHTTPS, createServerHTTP };
+>>>>>>> fb9b5cc (Implement sync middleware)
