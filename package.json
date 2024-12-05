@@ -11,9 +11,9 @@
     "http-server",
     "terminal"
   ],
-  "main": "apex2www",
+  "main": "./src/start.js",
   "bin": {
-    "apex2www": "./src/apex2www.js"
+    "apex2www": "./src/start.js"
   },
   "engines": {
     "node": ">6.0",
