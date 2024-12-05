@@ -33,10 +33,10 @@ module.exports.runSync = function runSync(args) {
   const execSync = require('child_process').execSync;
   try {
     return execSync(
-      `node ${path.resolve('./src/apex2www.js')} ${args.join(' ')}`,
+      `node ${path.resolve('./src/start.js')} ${args.join(' ')}`,
       {
-        'timeout': 1200000,
-        'windowsHide': true,
+        timeout: 1200000,
+        windowsHide: true,
       }
     ).toString();
   } catch (ex) {
