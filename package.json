@@ -37,6 +37,7 @@
   },
   "scripts": {
     "test": "mocha --timeout 1200000",
-    "eslint": "eslint src/**/*.js test/**/*.js"
+    "eslint": "eslint src/**/*.js test/**/*.js",
+    "eslint:fix":"eslint src/**/*.js test/**/*.js --fix"
   }
 }

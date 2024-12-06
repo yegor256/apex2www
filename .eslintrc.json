@@ -1,14 +1,29 @@
 {
   "env": {
-    "es6": true
+    "es2022": true,
+    "node": true
   },
   "extends": "google",
   "rules": {
     "comma-dangle": "off",
-    "indent": [ "error", 2 ],
-    "max-len": [ "error", { "code": 100 } ]
+    "linebreak-style": "off",
+    "object-curly-spacing": [
+      "error",
+      "always"
+    ],
+    "quote-props": "off",
+    "indent": [
+      "error",
+      2
+    ],
+    "max-len": [
+      "error",
+      {
+        "code": 100
+      }
+    ]
   },
   "parserOptions": {
-    "ecmaVersion": 2019
+    "ecmaVersion": 2022
   }
 }
