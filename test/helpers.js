@@ -22,21 +22,23 @@
  * SOFTWARE.
  */
 
+const http = require('http');
+
 /**
  * Helper to run apex2www command line tool.
  *
  * @param {Array} args - Array of args
  * @return {String} Stdout
  */
-module.exports.runSync = function runSync(args) {
+const runSync = (args) => {
   const path = require('path');
   const execSync = require('child_process').execSync;
   try {
     return execSync(
-      `node ${path.resolve('./src/apex2www.js')} ${args.join(' ')}`,
+      `node ${path.resolve('./src/start.js')} ${args.join(' ')}`,
       {
-        'timeout': 1200000,
-        'windowsHide': true,
+        timeout: 1200000,
+        windowsHide: true,
       }
     ).toString();
   } catch (ex) {
@@ -44,3 +46,22 @@ module.exports.runSync = function runSync(args) {
     throw ex;
   }
 };
+
+const waitForServer = (url) => {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Timeout')), 10000);
+    const interval = setInterval(() => {
+      http
+        .get(url, (response) => {
+          if (response) {
+            clearTimeout(timer);
+            clearInterval(interval);
+            resolve();
+          }
+        })
+        .on('error', () => {});
+    }, 100);
+  });
+};
+
+module.exports = { waitForServer, runSync };
