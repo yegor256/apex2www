@@ -24,6 +24,7 @@
 
 const assert = require('assert');
 const http = require('http');
+const https = require('https');
 const path = require('path');
 const runSync = require('./helpers').runSync;
 const exec = require('child_process').exec;
@@ -67,22 +68,26 @@ describe('apex2www', function() {
     });
   });
 
-  // it('runs web server and responds to HTTPS requests', function(done) {
-  //   const execPromise = util.promisify(exec);
-  //   portfinder.getPort(function(err, port) {
-  //     const p = execPromise(`node ${js} --https --port=${port} --halt=foo`);
-  //     setTimeout(function() {
-  //       const url = 'http://localhost:' + port + '/';
-  //       http.get(url, function(response) {
-  //         assert(response.headers['location'] == 'http://www.localhost:443/');
-  //         http.get(url, {headers: {'X-Apex2www-Halt': 'foo'}}, async function(response) {
-  //           const {stdout, stderr} = await p;
-  //           assert(stdout.includes('End of session'));
-  //           assert(stderr == '');
-  //           done();
-  //         });
-  //       });
-  //     }, 100);
-  //   });
-  // });
+  it('runs web server and responds to HTTPS requests', function(done) {
+    const execPromise = util.promisify(exec);
+    process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
+    portfinder.getPort(function(err, port) {
+      const p = execPromise(`node ${js} --https --port=${port} --halt=foo`);
+      setTimeout(function() {
+        const url = 'https://localhost:' + port + '/';
+        https.get(url, function(response) {
+          assert(response.headers['location'] == 'https://www.localhost:443/');
+          https.get(
+            {host: 'localhost', port, headers: {'X-Apex2www-Halt': 'foo'}},
+            async function(response) {
+              const {stdout, stderr} = await p;
+              assert(stdout.includes('End of session'));
+              assert(stderr == '');
+              done();
+            },
+          );
+        });
+      }, 100);
+    });
+  });
 });
