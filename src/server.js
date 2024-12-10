@@ -5,11 +5,9 @@ const url = require('url');
 const { setHeader } = require('./utils/header');
 const { oops, ok } = require('./utils/response');
 const version = require('./version');
-<<<<<<< HEAD
-const tls = require('tls');
-=======
->>>>>>> fb9b5cc (Implement sync middleware)
 const { syncMiddleware } = require('./utils/middleware');
+const TLS = require('tls');
+const path = require('path');
 
 const methodCheck = (context, next) => {
   const { request, response } = context;
@@ -77,29 +75,28 @@ const createServerHTTP = (opts) => {
 };
 
 const createServerHTTPS = (opts) => {
-  process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
   const port = opts.port;
   const key = fs.readFileSync(path.join('ssl/key.pem'));
   const cert = fs.readFileSync(path.join('ssl/cert.pem'));
-  const SNICallback = (_, cb) => {
-    cb(null, new tls.createSecureContext({
-      cert,
-      key,
-    }));
-  };
-
+  const ctx = TLS.createSecureContext({
+    cert,
+    key,
+  });
+  const SNICallback = (_, cb) => cb(null, ctx);
   const serverOptions = {
     SNICallback,
     maxVersion: 'TLSv1.3',
-    minVersion: 'TLSv1.2'
+    minVersion: 'TLSv1.2',
   };
-  https.createServer(
-    serverOptions,
-    servlet
-  ).listen(port);
+  https
+    .createServer(serverOptions, (req, res) => server(req, res, opts))
+    .listen(port);
   console.info(
     'HTTPS server started at port %d (key.length=%d, cert.length=%d), hit Ctrl-C to stop it',
-    port, sniDefaultKey.length, sniDefaultCert.length
+    port,
+    key.length,
+    cert.length
   );
 };
 

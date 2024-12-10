@@ -21,9 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 const http = require('http');
-
+const https = require('https');
 /**
  * Helper to run apex2www command line tool.
  *
@@ -48,10 +47,12 @@ const runSync = (args) => {
 };
 
 const waitForServer = (url) => {
+  const protocol = new URL(url).protocol;
+  const httpRequest = protocol === 'http:' ? http : https;
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('Timeout')), 10000);
     const interval = setInterval(() => {
-      http
+      httpRequest
         .get(url, (response) => {
           if (response) {
             clearTimeout(timer);
@@ -59,7 +60,7 @@ const waitForServer = (url) => {
             resolve();
           }
         })
-        .on('error', () => {});
+        .on('error', (error) => {});
     }, 100);
   });
 };
