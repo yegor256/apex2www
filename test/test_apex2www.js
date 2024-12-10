@@ -1,27 +1,3 @@
-/*
- * The MIT License (MIT)
- *
- * Copyright (c) 2024 Yegor Bugayenko
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 const assert = require('assert');
 const http = require('http');
 const https = require('https');
@@ -79,27 +55,6 @@ describe('apex2www', () => {
     });
   });
 
-  it('runs web server and responds to HTTPS requests', function(done) {
-    const execPromise = util.promisify(exec);
-    process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
-    portfinder.getPort(function(err, port) {
-      const p = execPromise(`node ${js} --https --port=${port} --halt=foo`);
-      setTimeout(function() {
-        const url = 'https://localhost:' + port + '/';
-        https.get(url, function(response) {
-          assert(response.headers['location'] == 'https://www.localhost:443/');
-          https.get(
-            {host: 'localhost', port, headers: {'X-Apex2www-Halt': 'foo'}},
-            async function(response) {
-              const {stdout, stderr} = await p;
-              assert(stdout.includes('End of session'));
-              assert(stderr == '');
-              done();
-            },
-          );
-        });
-      }, 100);
-    });});
   it('should return 400 for non-GET requests', async () => {
     const options = {
       method: 'POST',
@@ -142,7 +97,7 @@ describe('apex2www', () => {
     });
   });
 
-  it('should stop the server with correct Halt', async () => {
+  it('should stop the server with correct Halt', (done) => {
     const message = 'Will shutdown in a second...';
     http.get(url, { headers: { 'X-Apex2www-Halt': halt } }, (response) => {
       let body = '';
@@ -153,7 +108,51 @@ describe('apex2www', () => {
         assert.deepEqual(response.headers['content-type'], 'text/plain');
         assert.deepEqual(response.headers['content-length'], message.length);
         assert.deepEqual(response.headers['x-apex2www-version'], version.what);
+        done();
       });
+    });
+  });
+
+  it('should stop the HTTPS server with correct Halt', async function() {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    const port = await portfinder.getPortPromise();
+    const url = `https://localhost:${port}/`;
+    exec(`node ${server} --port=${port} --halt=${halt} --https`);
+    await waitForServer(url);
+    const expectedMessage = 'Will shutdown in a second...';
+    return new Promise((resolve, reject) => {
+      https
+        .get(url, { headers: { 'X-Apex2www-Halt': halt } }, (response) => {
+          let body = '';
+          response.on('data', (chunk) => (body += chunk));
+          response.on('end', () => {
+            try {
+              assert.equal(
+                response.statusCode,
+                200,
+                'Status code should be 200'
+              );
+              assert.equal(response.headers['content-type'], 'text/plain');
+              assert.equal(
+                response.headers['content-length'],
+                expectedMessage.length.toString()
+              );
+              assert.equal(
+                response.headers['x-apex2www-version'],
+                version.what
+              );
+              assert.equal(
+                body,
+                expectedMessage,
+                'Response body should match expected message'
+              );
+              resolve();
+            } catch (err) {
+              reject(err);
+            }
+          });
+        })
+        .on('error', (err) => reject(err));
     });
   });
 });
