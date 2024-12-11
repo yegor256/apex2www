@@ -25,8 +25,8 @@ set -e
 
 cd "$(dirname "$0")"
 
-src/apex2www.js --port 80 &
+src/start.js --port 80 &
 
-src/apex2www.js --https --port 443 &
+src/start.js --https --port 443 &
 
 tail -f /dev/null

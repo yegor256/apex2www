@@ -21,48 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-const http = require('http');
-const https = require('https');
-/**
- * Helper to run apex2www command line tool.
- *
- * @param {Array} args - Array of args
- * @return {String} Stdout
- */
-const runSync = (args) => {
-  const path = require('path');
-  const execSync = require('child_process').execSync;
-  try {
-    return execSync(
-      `node ${path.resolve('./src/start.js')} ${args.join(' ')}`,
-      {
-        timeout: 1200000,
-        windowsHide: true,
-      }
-    ).toString();
-  } catch (ex) {
-    console.log(ex.stdout.toString());
-    throw ex;
-  }
+
+const version = require('../version');
+
+const oops = (response, body) => {
+  response
+    .writeHead(400, 'Error', {
+      'Content-Length': body.length,
+      'Content-Type': 'text/plain',
+      'X-Apex2www-Version': version.what,
+    })
+    .end(body);
 };
 
-const waitForServer = (url) => {
-  const protocol = new URL(url).protocol;
-  const httpRequest = protocol === 'http:' ? http : https;
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('Timeout')), 10000);
-    const interval = setInterval(() => {
-      httpRequest
-        .get(url, (response) => {
-          if (response) {
-            clearTimeout(timer);
-            clearInterval(interval);
-            resolve();
-          }
-        })
-        .on('error', (error) => {});
-    }, 100);
-  });
+const ok = (response, body) => {
+  response
+    .writeHead(200, 'OK', {
+      'Content-Length': body.length,
+      'Content-Type': 'text/plain',
+      'X-Apex2www-Version': version.what,
+    })
+    .end(body);
 };
 
-module.exports = { waitForServer, runSync };
+module.exports = { oops, ok };
