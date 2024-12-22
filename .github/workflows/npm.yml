@@ -22,21 +22,45 @@
 ---
 name: npm
 on:
+  workflow_dispatch:
   push:
   pull_request:
 jobs:
-  npm:
+  lint-and-test:
     strategy:
       matrix:
-        os: [ubuntu-22.04]
-        java: [17]
-        node: [16]
+        node:
+          - 18
+          - 20
+          - 21
+          - 22
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node }}
-    - run: npm install
-    - run: npm run eslint
-    - run: npm test
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Use Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Cache Node.js modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run EsLint
+        run: npm run eslint
+
+      - name: Run Test
+        run: npm run test

@@ -21,48 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-const http = require('http');
-const https = require('https');
-/**
- * Helper to run apex2www command line tool.
- *
- * @param {Array} args - Array of args
- * @return {String} Stdout
- */
-const runSync = (args) => {
-  const path = require('path');
-  const execSync = require('child_process').execSync;
-  try {
-    return execSync(
-      `node ${path.resolve('./src/start.js')} ${args.join(' ')}`,
-      {
-        timeout: 1200000,
-        windowsHide: true,
-      }
-    ).toString();
-  } catch (ex) {
-    console.log(ex.stdout.toString());
-    throw ex;
-  }
-};
 
-const waitForServer = (url) => {
-  const protocol = new URL(url).protocol;
-  const httpRequest = protocol === 'http:' ? http : https;
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('Timeout')), 10000);
-    const interval = setInterval(() => {
-      httpRequest
-        .get(url, (response) => {
-          if (response) {
-            clearTimeout(timer);
-            clearInterval(interval);
-            resolve();
-          }
-        })
-        .on('error', (error) => {});
-    }, 100);
-  });
-};
+const { program } = require('commander');
+const version = require('./version');
 
-module.exports = { waitForServer, runSync };
+program
+  .name('apex2www')
+  .usage('[options]')
+  .summary('Apex/root redirector to www')
+  .description(
+    'HTTP server that redirects all requests to www. (' +
+      version.what +
+      ' built on ' +
+      version.when +
+      ')'
+  )
+  .version(version.what, '-v, --version', 'Output the version number')
+  .helpOption('-?, --help', 'Print this help information')
+  .configureHelp({ sortOptions: true, sortSubcommands: true });
+
+program
+  .option('--port <integer>', 'TCP port to bind to', 80)
+  .option(
+    '--halt <string>',
+    'If this value is provided in the X-Apex2www-Halt header, the app stops'
+  )
+  .option('--https', 'Listen to secure requests, instead of plain HTTP')
+  .option('--debug', 'Print as much as possible to the console')
+  .option('--verbose', 'Print every HTTP request to the console');
+
+module.exports = { command: program };
