@@ -21,48 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-const http = require('http');
-const https = require('https');
-/**
- * Helper to run apex2www command line tool.
- *
- * @param {Array} args - Array of args
- * @return {String} Stdout
- */
-const runSync = (args) => {
-  const path = require('path');
-  const execSync = require('child_process').execSync;
+
+const { program } = require('commander');
+const { command } = require('./command');
+const { createServerHTTPS, createServerHTTP } = require('./server');
+
+const start = () => {
   try {
-    return execSync(
-      `node ${path.resolve('./src/start.js')} ${args.join(' ')}`,
-      {
-        timeout: 1200000,
-        windowsHide: true,
-      }
-    ).toString();
-  } catch (ex) {
-    console.log(ex.stdout.toString());
-    throw ex;
+    command.parse(process.argv);
+    const opts = program.opts();
+    const server = opts.https ? createServerHTTPS : createServerHTTP;
+    server(opts);
+  } catch (e) {
+    console.error(e.message);
+    console.debug(e.stack);
+    process.exit(1);
   }
 };
 
-const waitForServer = (url) => {
-  const protocol = new URL(url).protocol;
-  const httpRequest = protocol === 'http:' ? http : https;
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('Timeout')), 10000);
-    const interval = setInterval(() => {
-      httpRequest
-        .get(url, (response) => {
-          if (response) {
-            clearTimeout(timer);
-            clearInterval(interval);
-            resolve();
-          }
-        })
-        .on('error', (error) => {});
-    }, 100);
-  });
-};
-
-module.exports = { waitForServer, runSync };
+start();

@@ -21,48 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-const http = require('http');
-const https = require('https');
-/**
- * Helper to run apex2www command line tool.
- *
- * @param {Array} args - Array of args
- * @return {String} Stdout
- */
-const runSync = (args) => {
-  const path = require('path');
-  const execSync = require('child_process').execSync;
-  try {
-    return execSync(
-      `node ${path.resolve('./src/start.js')} ${args.join(' ')}`,
-      {
-        timeout: 1200000,
-        windowsHide: true,
-      }
-    ).toString();
-  } catch (ex) {
-    console.log(ex.stdout.toString());
-    throw ex;
-  }
+
+const setHeader = (request, opts) => {
+  const protocol = request.connection.encrypted ? 'https' : 'http';
+  const parsedUrl = new URL(
+    request.url,
+    `${protocol}://${request.headers['host']}`
+  );
+  return {
+    href: parsedUrl.href,
+    origin: parsedUrl.origin,
+    pathname: parsedUrl.pathname,
+    search: parsedUrl.search,
+    searchParams: parsedUrl.searchParams.toString(),
+    hostname: request.headers['host'].replace(/:[0-9]+$/, ''),
+    protocol: opts.https ? 'https' : 'http',
+    port: opts.https ? '443' : '80',
+  };
 };
 
-const waitForServer = (url) => {
-  const protocol = new URL(url).protocol;
-  const httpRequest = protocol === 'http:' ? http : https;
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('Timeout')), 10000);
-    const interval = setInterval(() => {
-      httpRequest
-        .get(url, (response) => {
-          if (response) {
-            clearTimeout(timer);
-            clearInterval(interval);
-            resolve();
-          }
-        })
-        .on('error', (error) => {});
-    }, 100);
-  });
-};
-
-module.exports = { waitForServer, runSync };
+module.exports = { setHeader };
