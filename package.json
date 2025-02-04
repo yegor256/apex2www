@@ -1,42 +1,42 @@
 {
-  "name": "apex2www",
-  "version": "0.0.0",
   "author": "Yegor Bugayenko <yegor256@gmail.com> (https://www.yegor256.com/)",
-  "license": "MIT",
-  "repository": "yegor256/apex2www",
-  "description": "Apex/root redirector to www",
-  "homepage": "https://github.com/yegor256/apex2www",
-  "keywords": [
-    "cli",
-    "http-server",
-    "terminal"
-  ],
-  "main": "apex2www",
   "bin": {
     "apex2www": "./src/apex2www.js"
   },
-  "engines": {
-    "node": ">6.0",
-    "npm": ">8.0"
-  },
-  "os": [
-    "darwin",
-    "linux",
-    "win32"
-  ],
   "dependencies": {
     "colors": "1.4.0",
     "commander": "13.1.0",
     "node": "23.3.0"
   },
+  "description": "Apex/root redirector to www",
   "devDependencies": {
     "eslint": "8.57.1",
     "eslint-config-google": "0.14.0",
     "mocha": "11.0.1",
     "portfinder": "1.0.32"
   },
+  "engines": {
+    "node": ">6.0",
+    "npm": ">8.0"
+  },
+  "homepage": "https://github.com/yegor256/apex2www",
+  "keywords": [
+    "cli",
+    "http-server",
+    "terminal"
+  ],
+  "license": "MIT",
+  "main": "apex2www",
+  "name": "apex2www",
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "repository": "yegor256/apex2www",
   "scripts": {
-    "test": "mocha --timeout 1200000",
-    "eslint": "eslint src/**/*.js test/**/*.js"
-  }
+    "eslint": "eslint src/**/*.js test/**/*.js",
+    "test": "mocha --timeout 1200000"
+  },
+  "version": "0.0.0"
 }

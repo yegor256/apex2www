@@ -3,12 +3,20 @@
     "es6": true
   },
   "extends": "google",
-  "rules": {
-    "comma-dangle": "off",
-    "indent": [ "error", 2 ],
-    "max-len": [ "error", { "code": 100 } ]
-  },
   "parserOptions": {
     "ecmaVersion": 2019
+  },
+  "rules": {
+    "comma-dangle": "off",
+    "indent": [
+      "error",
+      2
+    ],
+    "max-len": [
+      "error",
+      {
+        "code": 100
+      }
+    ]
   }
 }
