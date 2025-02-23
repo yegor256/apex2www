@@ -1,7 +1,5 @@
 #! /usr/bin/env node
 /*
- * The MIT License (MIT)
- *
  * SPDX-FileCopyrightText: Copyright (c) 2024 Yegor Bugayenko
  * SPDX-License-Identifier: MIT
  */
