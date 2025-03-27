@@ -6,6 +6,7 @@ version = 1
 path = [
     "**.json",
     "**.md",
+    "**.pem",
     "**.txt",
     "**/*.csv",
     "**/*.jpg",
