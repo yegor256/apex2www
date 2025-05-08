@@ -13,7 +13,7 @@
     "eslint": "8.57.1",
     "eslint-config-google": "0.14.0",
     "mocha": "11.0.1",
-    "portfinder": "1.0.32"
+    "portfinder": "1.0.37"
   },
   "engines": {
     "node": ">6.0",
