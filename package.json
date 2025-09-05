@@ -10,7 +10,7 @@
   },
   "description": "Apex/root redirector to www",
   "devDependencies": {
-    "eslint": "8.57.1",
+    "eslint": "9.35.0",
     "eslint-config-google": "0.14.0",
     "mocha": "11.0.1",
     "portfinder": "1.0.32"
