@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: Copyright (c) 2024 Yegor Bugayenko
 # SPDX-License-Identifier: MIT
 
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 MAINTAINER Yegor Bugayenko <yegor256@gmail.com>
 LABEL Description="Apex/root DNS redirector" Vendor="Yegor Bugayenko" Version="0.1"
 
